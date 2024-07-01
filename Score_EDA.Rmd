@@ -1,0 +1,1010 @@
+# **Exploratory Data Analysis On Student Performance**
+
+# **Objective of this Analysis:**
+
+To understand how the student's performance (test scores) is affected by the other variables (Gender, Ethnicity, Parental level of education, Lunch, Test preparation course).
+
+# **Parameters:**
+
+1.  gender: Gender of the student
+
+2.  race/ethnicity: Race of the Student As Group A/B/C
+
+3.  parental level of education : What is the education Qualification of Students Parent
+
+4.  lunch: Whether the lunch is Standard type/Free lunch or Some discounted lunch
+
+5.  test preparation course: Whether Student has Taken or not and Completed
+
+6.  math score: Scores in Maths
+
+7.  reading score: Scores in Reading
+
+8.  writing score: Scores in Writing
+
+```{r}
+# Read the CSV file into a data frame
+df <- read.csv("E:\\MSc BDA\\1st sem\\Stat 1\\EDA project\\StudentsPerformance.csv",header = TRUE)
+
+# View the first 10 rows of the data frame
+head(df, 10)
+View(df)
+
+```
+
+### **Columns and unique values**
+
+```{r}
+column_names <- colnames(df)
+print(column_names)
+```
+
+```{r}
+# Get unique values from the 'gender' column
+unique_values_gender <- levels(as.factor(df$gender))
+
+# Print the list of unique values
+print(unique_values_gender)
+
+```
+
+```{r}
+# Get unique values from the 'race/ethnicity' column
+unique_values_ethnicity <- levels(as.factor(df$`race.ethnicity`))
+
+# Print the list of unique values
+print(unique_values_ethnicity)
+
+```
+
+```{r}
+# Get unique values from the 'parental level of education' column
+unique_values_education <- levels(factor(df$`parental.level.of.education`,levels = c("some high school", "high school", "some college", "associate's degree", "bachelor's degree", "master's degree")))
+
+
+# Print the sorted list of unique values
+print(unique_values_education)
+
+```
+
+```{r}
+# Get unique values from the 'lunch' column
+unique_values_lunch <- levels((as.factor(df$lunch)))
+
+# Print the list of unique values
+print(unique_values_lunch)
+```
+
+```{r}
+# Get unique values from the 'test.preparation.course' column
+unique_values_prepartion <- levels((as.factor(df$test.preparation.course)))
+
+# Print the list of unique values
+print(unique_values_prepartion)
+```
+
+### Data cleaning and description of the data
+
+```{r}
+# Display information about the data frame
+str(df)
+```
+
+```{r}
+# Get data types of each column
+column_data_types <- sapply(df, class)
+
+# Print the data types
+print(column_data_types)
+```
+
+```{r}
+# Count the number of missing values in each column
+missing_values <- colSums(is.na(df))
+
+# Print the counts of missing values
+print(missing_values)
+```
+
+```{r}
+# Get the dimensions (number of rows and columns) of the data frame
+dimensions <- dim(df)
+
+# Print the dimensions
+print(dimensions)
+```
+
+```{r}
+# Generate a summary of statistics for the data frame
+summary(df)
+```
+
+### **No. of values for each unique column value**
+
+```{r}
+# Count the unique values in the 'gender' column
+gender_counts <- table(df$gender)
+
+# Print the counts of unique values
+print(gender_counts)
+
+
+
+
+```
+
+```{r}
+# Count the unique values in the 'race.ethnicity' column
+ethnicity_counts <- table(df$race.ethnicity)
+
+# Print the counts of unique values
+print(ethnicity_counts)
+```
+
+```{r}
+# Count the unique values in the 'parental level of education' column
+education_sort <- factor(df$parental.level.of.education,levels = c("some high school", "high school", "some college", "associate's degree", "bachelor's degree", "master's degree"))
+
+education_counts <- table(education_sort)
+
+# Print the counts of unique values
+print(education_counts)
+```
+
+```{r}
+# Count the unique values in the 'test preparation course' column
+prep_counts <- table(df$test.preparation.course)
+
+# Print the counts of unique values
+print(prep_counts)
+```
+
+```{r}
+# Count the unique values in the 'lunch' column
+lunch_counts <- table(df$lunch)
+
+# Print the counts of unique values
+print(lunch_counts)
+```
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+
+
+# Calculate percentages for each category
+percentages_gender <- df %>% count(gender) %>%
+  mutate(percent = sprintf("%.2f%%", n / sum(n) * 100))
+
+percentages_race <- df %>% count(`race.ethnicity`) %>%
+  mutate(percent = sprintf("%.2f%%", n / sum(n) * 100))
+
+percentages_education <- df %>% count(`parental.level.of.education`) %>%
+  mutate(percent = sprintf("%.2f%%", n / sum(n) * 100))
+
+percentages_lunch <- df %>% count(lunch) %>%
+  mutate(percent = sprintf("%.2f%%", n / sum(n) * 100))
+
+percentages_prep_course <- df %>% count(`test.preparation.course`) %>%
+  mutate(percent = sprintf("%.2f%%", n / sum(n) * 100))
+
+# Calculate label positions for pie charts
+percentages_gender <- arrange(percentages_gender, desc(n))
+percentages_gender$percent <- as.character(percentages_gender$percent)
+percentages_gender$angle <- 90 - 360 * cumsum(percentages_gender$n) / sum(percentages_gender$n)
+percentages_gender$hjust <- ifelse(percentages_gender$angle < -90, 1, 0)
+percentages_gender$angle <- ifelse(percentages_gender$angle < -90, percentages_gender$angle + 180, percentages_gender$angle)
+
+percentages_race <- arrange(percentages_race, desc(n))
+percentages_race$percent <- as.character(percentages_race$percent)
+percentages_race$angle <- 90 - 360 * cumsum(percentages_race$n) / sum(percentages_race$n)
+percentages_race$hjust <- ifelse(percentages_race$angle < -90, 1, 0)
+percentages_race$angle <- ifelse(percentages_race$angle < -90, percentages_race$angle + 180, percentages_race$angle)
+
+percentages_education <- arrange(percentages_education, desc(n))
+percentages_education$percent <- as.character(percentages_education$percent)
+percentages_education$angle <- 90 - 360 * cumsum(percentages_education$n) / sum(percentages_education$n)
+percentages_education$hjust <- ifelse(percentages_education$angle < -90, 1, 0)
+percentages_education$angle <- ifelse(percentages_education$angle < -90, percentages_education$angle + 180, percentages_education$angle)
+
+percentages_lunch <- arrange(percentages_lunch, desc(n))
+percentages_lunch$percent <- as.character(percentages_lunch$percent)
+percentages_lunch$angle <- 90 - 360 * cumsum(percentages_lunch$n) / sum(percentages_lunch$n)
+percentages_lunch$hjust <- ifelse(percentages_lunch$angle < -90, 1, 0)
+percentages_lunch$angle <- ifelse(percentages_lunch$angle < -90, percentages_lunch$angle + 180, percentages_lunch$angle)
+
+percentages_prep_course <- arrange(percentages_prep_course, desc(n))
+percentages_prep_course$percent <- as.character(percentages_prep_course$percent)
+percentages_prep_course$angle <- 90 - 360 * cumsum(percentages_prep_course$n) / sum(percentages_prep_course$n)
+percentages_prep_course$hjust <- ifelse(percentages_prep_course$angle < -90, 1, 0)
+percentages_prep_course$angle <- ifelse(percentages_prep_course$angle < -90, percentages_prep_course$angle + 180, percentages_prep_course$angle)
+
+# Create pie charts with percentage labels
+ggplot(percentages_gender, aes(x = 1, y = n, fill = gender)) +
+  geom_bar(stat = "identity", width = 1) +
+  geom_text(aes(x = 1, y = n, label = percent, angle = angle, hjust = hjust),
+            position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Gender Percentages",fill="Gender") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, size = 25),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15))
+
+ggplot(percentages_race, aes(x = 1, y = n, fill = `race.ethnicity`)) +
+  geom_bar(stat = "identity", width = 1) +
+  geom_text(aes(x = 1, y = n, label = percent, angle = angle, hjust = hjust),
+            position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Race/Ethnicity Percentages",fill="Race/Ethnicity") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, size = 25),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15))
+
+ggplot(percentages_education, aes(x = 1, y = n, fill = `parental.level.of.education`)) +
+  geom_bar(stat = "identity", width = 1) +
+  geom_text(aes(x = 1, y = n, label = percent, angle = angle, hjust = hjust),
+            position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") + 
+  labs(title = "Parental Education Percentages",fill="Parent's degree") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, size = 25),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15))
+
+ggplot(percentages_lunch, aes(x = 1, y = n, fill = lunch)) +
+  geom_bar(stat = "identity", width = 1) +
+  geom_text(aes(x = 1, y = n, label = percent, angle = angle, hjust = hjust),
+            position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Lunch Percentages",fill="Lunch type") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, size = 25),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15))
+
+ggplot(percentages_prep_course, aes(x = 1, y = n, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", width = 1) +
+  geom_text(aes(x = 1, y = n, label = percent, angle = angle, hjust = hjust),
+            position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Test Preparation Course Percentages",fill="Test preparation course") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, size = 25),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15))
+```
+
+### **Observations:**
+
+1.  The number of females are slightly more than number of males
+
+2.  Most students belong to Group C, and least number belong to Group A
+
+3.  Parents of most students have either an associate degree or degree in some college, while least no. of student's parents have *Master's degree*
+
+4.  Nearly double the number of students opted for standard lunch
+
+5.  Nearly double the number of students neither did nor completed the test preparation course
+
+## **Finding no. of students who got a particular score in each subject**
+
+```{r}
+library(ggplot2)
+
+# Define score intervals
+intervals <- seq(0, 100, by = 20)
+
+# Create a categorical variable for score intervals
+df$math_score_interval <- cut(df$`math.score`, breaks = intervals, include.lowest = TRUE, right = FALSE)
+
+# Define custom labels for x-axis
+custom_labels <- c("0-19", "20-39", "40-59", "60-79", "80-100")
+
+# Set the labels as a factor with custom levels
+Score_interval <- factor(df$math_score_interval, levels = unique(df$math_score_interval), labels = custom_labels)
+
+# Plot the divided bar diagram using ggplot
+ggplot(df, aes(x = math_score_interval, fill = Score_interval)) +
+  geom_bar() + 
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  scale_x_discrete(labels = custom_labels) +
+  labs(x = 'Math Score Intervals', y = 'Count', 
+       title = 'Distribution of Math Score Intervals',fill="Score intervals") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 0, hjust = 0.5),plot.title = element_text(hjust = 0.5, size = 30),legend.text = element_text(size = 15),legend.title = element_text(size=15))
+
+
+```
+
+```{r}
+# Create a categorical variable for score intervals
+df$reading_score_interval = cut(df$reading.score,breaks = intervals,include.lowest = TRUE,right = FALSE)
+
+Score_interval = factor(df$reading_score_interval,levels=unique(df$reading_score_interval),labels = custom_labels)
+
+ggplot(df,aes(x = reading_score_interval, fill = Score_interval)) +
+  geom_bar() + 
+  geom_text(stat='count', aes(label=after_stat(count)),position = position_dodge   (width = 0.9),vjust=-0.25) +
+  scale_x_discrete(labels=custom_labels) +
+  labs(x = 'Reading Score Intervals', y = 'Count', 
+  title = 'Distribution of Reading Score Intervals',fill="Score intervals") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5),plot.title = element_text(hjust = 0.5, size = 30),legend.text = element_text(size = 15),legend.title = element_text(size=15))
+```
+
+```{r}
+
+# Create a categorical variable for score intervals
+df$writing_score_interval = cut(df$writing.score, breaks = intervals,include.lowest = TRUE,right = FALSE)
+
+Score_interval = factor(df$writing_score_interval,levels=unique(df$writing_score_interval),labels = custom_labels)
+
+ggplot(df,aes(x = writing_score_interval, fill = Score_interval)) +
+  geom_bar() + geom_text(stat='count', aes(label=after_stat(count)),position = position_dodge(width = 0.9),vjust=-0.25) +
+  scale_x_discrete(labels=custom_labels) +
+  labs(x = 'Writing Score Intervals', y = 'Count', 
+  title = 'Distribution of Writing Score Intervals',fill="Score intervals") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5),plot.title = element_text(hjust = 0.5, size = 30),legend.text = element_text(size = 15),legend.title = element_text(size=15))
+```
+
+```{r}
+
+# Create boxplots for math score, reading score, and writing score
+boxplot(df$`math.score`,main = "Math score", cex.main = 1.5, cex.axis = 1.2)
+boxplot(df$`reading.score`,main = "Reading score", ylim=c(0,100),cex.main = 1.5, cex.axis = 1.2)
+boxplot(df$`writing.score`,main = "Writing score",ylim=c(0,100), cex.main = 1.5, cex.axis = 1.2)
+
+
+```
+
+### **Observations:**
+
+1.  Most number of students scored in the range of 60-80 in all three subjects
+
+```{r}
+# Calculate summary statistics for math score, reading score, and writing score
+summary(df$`math.score`)
+summary(df$`reading.score`)
+summary(df$`writing.score`)
+
+```
+
+## **Comparison of Scores with rest of the parameters**
+
+```{r}
+# Create bar plots for math score, reading score, and writing score with respect to gender
+barplot(tapply(df$`math.score`, df$gender, mean), beside = TRUE, col = c("skyblue", "salmon"), names.arg = levels(df$gender),xlab = 'Gender',ylab='Math score',ylim = c(0,80),cex.names = 1.2)
+title(main = "Average Math Score vs Gender", cex.main = 2.0)
+barplot(tapply(df$`reading.score`, df$gender, mean), beside = TRUE, col = c("skyblue", "salmon"), names.arg = levels(df$gender),xlab = 'Gender',ylab='Reading score',ylim = c(0,80),cex.names = 1.2)
+title(main = "Average Reading Score vs Gender", cex.main = 2.0)
+barplot(tapply(df$`writing.score`, df$gender, mean), beside = TRUE, col = c("skyblue", "salmon"), names.arg = levels(df$gender),xlab = 'Gender',ylab='Writing score',ylim = c(0,80),cex.names = 1.2)
+title(main = "Average Writing Score vs Gender", cex.main = 2.0)
+
+```
+
+### **Observations:**
+
+1.  Males performed better than females in Math
+
+2.  Females performed better than males in both Reading and Writing
+
+3.  Overall females performed better than males, since females performed better than males in two subjects
+
+```{r}
+bar_colors <- c("skyblue", "salmon", "lightgreen", "palevioletred", "gold")  
+
+# Create bar plots for Math Score vs Ethnicity
+barplot(tapply(df$`math.score`, df$`race.ethnicity`, mean), col = bar_colors, xlab = "Race/Ethnicity", ylab = "Math Score",ylim = c(0,80), cex.names = 0.8)
+title(main ="Average Math Score vs Ethnicity",cex.main=2.0)
+
+# Create bar plots for Reading Score vs Ethnicity
+barplot(tapply(df$`reading.score`, df$`race.ethnicity`, mean), col = bar_colors, xlab = "Race/Ethnicity", ylab = "Reading Score",ylim = c(0,80), cex.names = 0.8)
+title(main ="Average Reading Score vs Ethnicity",cex.main=2.0)
+
+# Create bar plots for Writing Score vs Ethnicity
+barplot(tapply(df$`writing.score`, df$`race.ethnicity`, mean), col = bar_colors,xlab = "Race/Ethnicity", ylab = "Writing Score",ylim = c(0,80), cex.names = 0.8)
+title(main ="Average Writing Score vs Ethnicity",cex.main=2.0)
+
+```
+
+### **Observations:**
+
+1.  Students belonging to Group E performed the best
+
+2.  Students belonging to Group A performed the worst
+
+3.  Performance of students improve as we move from group A to B to C to D to group E
+
+```{r}
+bar_colors <- c("skyblue", "salmon") 
+# Create bar plots for Math Score vs Preparation Course
+barplot(tapply(df$`math.score`, df$`test.preparation.course`, mean), beside = TRUE, col = bar_colors, xlab = "Test Preparation Course", ylab = "Math Score",ylim = c(0,80) ,cex.names = 1.2)
+title(main ="Average Math Score vs Preparation Course",cex.main=2.0)
+
+# Create bar plots for Reading Score vs Preparation Course
+barplot(tapply(df$`reading.score`, df$`test.preparation.course`, mean), beside = TRUE, col = bar_colors, xlab = "Test Preparation Course", ylab = "Reading Score",ylim = c(0,80), cex.names = 1.2)
+title(main ="Average Reading Score vs Preparation Course",cex.main=2.0)
+
+# Create bar plots for Writing Score vs Preparation Course
+barplot(tapply(df$`writing.score`, df$`test.preparation.course`, mean), beside = TRUE, col = bar_colors, xlab = "Test Preparation Course", ylab = "Writing Score",ylim=c(0,80), cex.names = 1.2)
+title(main ="Average Writing Score vs Preparation Course",cex.main=2.0)
+
+```
+
+### **Observations:**
+
+1.  Students who completed test preparation course scored better in all the three subjects compared with those who didn't complete the course
+
+```{r}
+
+df$`parental.level.of.education` <- factor(df$`parental.level.of.education`, levels = c("some high school", "high school", "some college", "associate's degree", "bachelor's degree", "master's degree"))
+
+colorPalette <- rev(heat.colors(length(levels(df$`parental.level.of.education`))))
+
+# Create bar plot for Math Score vs Parental Level of Education
+barplot(tapply(df$`math.score`, df$`parental.level.of.education`, mean), col = colorPalette, xlab = "Parental Level of Education", ylab = "Math Score",ylim = c(0,80), cex.names = 0.8)
+title(main ="Average Math Score vs Parental Level of Education",cex.main=1.5)
+
+# Create bar plot for Reading Score vs Parental Level of Education
+barplot(tapply(df$`reading.score`, df$`parental.level.of.education`, mean), col = colorPalette, xlab = "Parental Level of Education", ylab = "Reading Score",ylim = c(0,80), cex.names = 0.8)
+title(main ="Average Reading Score vs Parental Level of Education",cex.main=1.5)
+
+# Create bar plot for Writing Score vs Parental Level of Education
+barplot(tapply(df$`writing.score`, df$`parental.level.of.education`, mean), col = colorPalette, xlab = "Parental Level of Education", ylab = "Writing Score", ylim=c(0,80),cex.names = 0.8)
+title(main ="Average Writing Score vs Parental Level of Education",cex.main=1.5)
+
+```
+
+### **Observations:**
+
+1.  Students whose parents had master's degree performed the best, this was closely followed by bachelor's degree
+
+2.  Students whose parental level of education was either high school or some high school performed the worst
+
+3.  Therefore higher the parent's education better was the student's education
+
+```{r}
+bar_colors <- c("lightgreen", "lightblue")
+# Create bar plots for Math Score vs Lunch
+barplot(tapply(df$`math.score`, df$lunch, mean), col = bar_colors, xlab = "Lunch", ylab = "Math Score", names.arg = levels(df$lunch), ylim = c(0,80),cex.names = 1.0)
+title(main ="Average Math Score vs Lunch",cex.main=2.0)
+
+# Create bar plots for Reading Score vs Lunch
+barplot(tapply(df$`reading.score`, df$lunch, mean), col = bar_colors, xlab = "Lunch", ylab = "Reading Score", names.arg = levels(df$lunch),ylim = c(0,80),cex.names = 1.0)
+title(main ="Average Reading Score vs Lunch",cex.main=2.0)
+# Create bar plots for Writing Score vs Lunch
+barplot(tapply(df$`writing.score`, df$lunch, mean), col = bar_colors, xlab = "Lunch", ylab = "Writing Score", names.arg = levels(df$lunch),ylim=c(0,80) ,cex.names = 1.0)
+title(main ="Average Writing Score vs Lunch",cex.main=2.0)
+
+```
+
+### **Observations:**
+
+1.  Students who opted for standard lunch performed better than those who opted for free/reduced lunch
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Calculating average scores
+avg_scores <- df %>%
+  group_by(race.ethnicity, test.preparation.course) %>%
+  summarise(
+    math_avg = mean(`math.score`),
+    reading_avg = mean(`reading.score`),
+    writing_avg = mean(`writing.score`)
+  ) %>%
+  ungroup()
+
+# Plot for Math Score by Race/Ethnicity and Test Preparation Course
+ggplot(avg_scores, aes(x = race.ethnicity, y = math_avg, fill = test.preparation.course)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Math Score", x = "Race/Ethnicity", y = "Math Score",fill="Test preparation course") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0,size = 10),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Plot for Reading Score by Race/Ethnicity and Test Preparation Course
+ggplot(avg_scores, aes(x = race.ethnicity, y = reading_avg, fill = test.preparation.course)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Reading Score", x = "Race/Ethnicity", y = "Reading Score",fill="Test preparation course") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, size = 10),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Plot for Writing Score by Race/Ethnicity and Test Preparation Course
+ggplot(avg_scores, aes(x = race.ethnicity, y = writing_avg, fill = test.preparation.course)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Writing Score", x = "Race/Ethnicity", y = "Writing Score",fill="Test preparation course") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0,size=10),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+
+```
+
+### **Observations:**
+
+1.  Students irrespective of their ethnic group, performed better if they completed test preparation course
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Calculate the average scores for each race/ethnicity and parental level of education
+avg_scores <- df %>%
+  group_by(`race.ethnicity`, `parental.level.of.education`) %>%
+  summarise(
+    avg_math_score = mean(`math.score`),
+    avg_reading_score = mean(`reading.score`),
+    avg_writing_score = mean(`writing.score`)
+  )
+
+# Plotting the bar plots for average scores by Race/Ethnicity and Parental Level of Education
+ggplot(avg_scores, aes(x = `race.ethnicity`, y = avg_math_score, fill = `parental.level.of.education`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Math Score", x = "Race/Ethnicity", y = "Math Score",fill="Parent's degree") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+ggplot(avg_scores, aes(x = `race.ethnicity`, y = avg_reading_score, fill = `parental.level.of.education`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Reading Score", x = "Race/Ethnicity", y = "Reading Score",fill="Parent's degree") +
+  theme(axis.text.x = element_text(angle = 0), 
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+ggplot(avg_scores, aes(x = `race.ethnicity`, y = avg_writing_score, fill = `parental.level.of.education`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Writing Score", x = "Race/Ethnicity", y = "Writing Score",fill="Parent's degree") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+
+
+```
+
+### **Observations:**
+
+1.  **Math score:** Student's whose parents have bachelor's degree and belonging to ethnic group: A,B,C,E and student's whose parents have master's degree and belonging to ethnic group D performed better.
+
+2.  **Reading score:** Student's whose parents have bachelor's degree and belonging to ethnic group: A,C, and student's whose parents have master's degree and belonging to ethnic group B,D,E performed better.
+
+3.  **Writing score:** Student's whose parents have bachelor's degree and belonging to ethnic group: A,C and student's whose parents have master's degree and belonging to ethnic group A,B,D,E performed better.
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+
+# Calculate the average scores by gender and race/ethnicity
+avg_scores <- df %>%
+  group_by(gender, `race.ethnicity`) %>%
+  summarise(
+    avg_math_score = mean(`math.score`),
+    avg_reading_score = mean(`reading.score`),
+    avg_writing_score = mean(`writing.score`)
+  ) %>%
+  ungroup()
+
+# Math Score
+ggplot(avg_scores, aes(x = gender, y = avg_math_score, fill = `race.ethnicity`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Math Score", x = "Race/Ethnicity", y = "Math Score",fill="Race/Ethnicity") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+
+# Reading Score
+ggplot(avg_scores, aes(x = gender, y = avg_reading_score, fill = `race.ethnicity`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Reding Score", x = "Race/Ethnicity", y = "Reading Score",fill="Race/Ethnicity") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Writing Score
+ggplot(avg_scores, aes(x = gender, y = avg_writing_score, fill = `race.ethnicity`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Writing Score", x = "Race/Ethnicity", y = "Writing Score",fill="Race/Ethnicity") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+```
+
+### **Observations:**
+
+1.  male and female students from group E performed better in Math
+
+2.  male and female students from group E and Group D performed better in reading and writing
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Calculate average scores
+avg_scores <- df %>%
+  group_by(gender, `test.preparation.course`) %>%
+  summarise(
+    avg_math_score = mean(`math.score`),
+    avg_reading_score = mean(`reading.score`),
+    avg_writing_score = mean(`writing.score`)
+  ) %>%
+  ungroup()
+
+# Math Score
+ggplot(avg_scores, aes(x = gender, y = avg_math_score, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Math Score", x = "Gender", y = "Math Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Reading Score
+ggplot(avg_scores, aes(x = gender, y = avg_reading_score, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Reading Score", x = "Gender", y = "Reading Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Writing Score
+ggplot(avg_scores, aes(x = gender, y = avg_writing_score, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Writing Score", x = "Gender", y = "Writing Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+
+
+
+
+
+```
+
+### **Observations:**
+
+1.  Students irrespective of their gender performed better when they completed test course.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Calculate average scores
+avg_scores <- df %>%
+  group_by(`parental.level.of.education`, `test.preparation.course`) %>%
+  summarise(
+    math_avg = mean(`math.score`),
+    reading_avg = mean(`reading.score`),
+    writing_avg = mean(`writing.score`)
+  ) %>%
+  ungroup()
+
+# Set the figure size (plot area)
+options(repr.plot.width=20, repr.plot.height=17)
+
+# Plot for Math Score by Parental Level of Education and Test Preparation Course
+ggplot(avg_scores, aes(x = `parental.level.of.education`, y = math_avg, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Math Score", x = "Parental Level of Education", y = "Math Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Plot for Reading Score by Parental Level of Education and Test Preparation Course
+ggplot(avg_scores, aes(x = `parental.level.of.education`, y = reading_avg, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Reading Score", x = "Parental Level of Education", y = "Reading Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+# Plot for Writing Score by Parental Level of Education and Test Preparation Course
+ggplot(avg_scores, aes(x = `parental.level.of.education`, y = writing_avg, fill = `test.preparation.course`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Writing Score", x = "Parental Level of Education", y = "Writing Score",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0, 100))
+
+```
+
+### **Observations:**
+
+1.  Students irrespective of their parental level of education, performed better if they completed test preparation course
+
+2.  The only exception is in Math score of students whose parent's have masters degree whose performance did not depend on completing the test preparation course
+
+### **Finding out how various parameters effect completion of Test Preparation Course**
+
+```{r}
+library(ggplot2)
+
+# Set the figure size (optional)
+options(repr.plot.width=20, repr.plot.height=15)
+
+# Plot for Ethnicity vs Preparation Course
+ggplot(df, aes(x = `race.ethnicity`, fill = `test.preparation.course`)) +
+  geom_bar(position = "fill") +
+  labs(title = "Ethnicity vs Preparation Course",x="Race/Ethnicity",y="Ratio count",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+# Plot for Gender vs Preparation Course
+ggplot(df, aes(x = gender, fill = `test.preparation.course`)) +
+  geom_bar(position = "dodge") + 
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs(title = "Gender vs Preparation Course",x="Gender",y="Count",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0,400))
+
+# Plot for Parent's Degree vs Preparation Course
+ggplot(df, aes(x = `parental.level.of.education`, fill = `test.preparation.course`)) +
+  geom_bar(position = "fill") +
+  labs(title = "Parent's Degree vs Preparation Course",x="Parent's Degree",y="Ratio count",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+# Plot for Lunch vs Preparation Course
+ggplot(df, aes(x = lunch, fill = `test.preparation.course`)) +
+  geom_bar(position = "fill") +
+  labs(title = "Lunch vs Preparation Course",x="Lunch",y="Ratio count",fill="Test preparation course") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+
+```
+
+### **Observations:**
+
+1.  **Ethnicity:** The ratio of students who not completed the course and completed the course is almost 2:1 in Group B and C(the highest).Therefore marketing about course should target these two groups to increase rate of completion. most number of students from group e completed course, hence this group performed the best.
+
+2.  **Gender:** Most of the male and female students did not complete the course
+
+3.  **Parental level of education:** Most of the students whose parents have *some high school education* completed the course, while most of the students whose parents have *high school education* and *masters degree* did not complete the course
+
+4.  **Lunch:** Most of the standard and free lunch students did not complete the course
+
+# **Parental Level Of Education**
+
+```{r}
+library(ggplot2)
+
+# Set the figure size (optional)
+options(repr.plot.width=20, repr.plot.height=10)
+
+# Parent's Degree vs Lunch
+ggplot(df, aes(x = `parental.level.of.education`, fill = lunch)) +
+  geom_bar(position = "fill") +
+  labs(title = "Parent's Degree vs Lunch",x="Parent's Degree",fill="Lunch") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+# Parent's Degree vs Gender
+ggplot(df, aes(x = `parental.level.of.education`, fill = gender)) +
+  geom_bar(position = "dodge") +
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs(title = "Parent's Degree vs Gender",x="Parent's Degree",y="Count",fill="Gender") +
+  theme(axis.text.x = element_text(angle = 0),
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+```
+
+### **Observations:**
+
+1.  **Lunch:** Most of the students irrespective of their parent's degree opted standard lunch
+
+2.  **Gender:** Only for the students whose parent's degree is high school has more male students than female students irrespective the others
+
+```{r}
+library(ggplot2)
+
+my_colors <- c("lightblue", "lightgreen")
+
+# Ethnicity vs Lunch
+ggplot(df, aes(x = `race.ethnicity`, fill = lunch)) +
+  geom_bar(position = "fill")  +
+  labs(title = "Ethnicity vs Lunch",x="Race/Ethnicity",y="Count",fill="Lunch") +
+  scale_fill_manual(values = my_colors) +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+# Ethnicity vs Gender
+ggplot(df, aes(x = `race.ethnicity`, fill = gender)) +
+  geom_bar(position = "dodge") +
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs(title = "Ethnicity vs Gender",x="Race/Ethnicity",y="Count",fill="Gender") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+my_colors <- rev(hcl.colors(n = length(unique(df$`parental.level.of.education`)), palette = "YlOrRd"))
+
+# Ethnicity vs Parent's Education
+ggplot(df, aes(x = `race.ethnicity`, fill = `parental.level.of.education`)) +
+  geom_bar(position = "dodge") + 
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs(title = "Ethnicity vs Parent's Education",x="Race/Ethnicity",y="Count",fill="Parent's degree") +
+  scale_fill_manual(values = my_colors) +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+```
+
+### **Observations:**
+
+1.  **Gender:** Group C and B have higher number of females, Group A has higher number of males and Group D and E have similar no. of males and females
+
+2.  **Lunch:** Students of Group E have higher percentage of students opting for standard lunch, while students of Group A have lowest percentage
+
+3.  **Parental level of education:** Group B has higher number of high school graduated parents, Group C has higher number of associate's degree graduated parents, Group A has higher number of some high school graduated parents, Group D has higher number of some college graduated parents, Group E has higher number of associate's graduated parents
+
+```{r}
+library(ggplot2)
+
+my_colors <- c("lightblue", "lightgreen")
+
+# Gender vs Lunch
+ggplot(df, aes(x = gender, fill = lunch)) +
+  geom_bar(position = "dodge") +
+  geom_text(stat='count', aes(label=after_stat(count)), position=position_dodge(width=0.9), vjust=-0.25) +
+  labs(title = "Gender vs Lunch", x = "Gender", y = "Count",fill="Lunch") +
+  scale_fill_manual(values = my_colors) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 30),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15)) +
+  scale_y_continuous(limits = c(0,400))
+
+```
+
+### **Observations:**
+
+1.  Most number of male and female students opted for standard lunch
+
+# **Correlation analysis**
+
+```{r}
+numeric_df <- df[sapply(df, is.numeric)]
+correlation_matrix <- cor(numeric_df)
+correlation_matrix
+```
+
+### **Observations:**
+
+1.  **Math and Reading Scores (0.818)**:
+
+    -   There is a relatively strong positive correlation (0.818) between math and reading scores.
+
+    -   This indicates a moderate to high positive relationship between a student's math score and their reading score. When a student performs well in math, they are more likely to perform well in reading, and vice versa.
+
+2.  **Math and Writing Scores (0.803)**:
+
+    -   There is a strong positive correlation (0.803) between math and writing scores.
+
+    -   Similar to math and reading scores, this suggests a moderate to high positive relationship between a student's math score and their writing score.
+
+3.  **Reading and Writing Scores (0.955)**:
+
+    -   There is a very strong positive correlation (0.955) between reading and writing scores.
+
+    -   This indicates a highly positive relationship between a student's reading and writing abilities. A good performance in reading is highly associated with a good performance in writing.
+
+```{r}
+library(corrplot)
+
+corrplot(correlation_matrix, method = "color", addCoef.col = "green", tl.cex = 0.8)
+
+```
+
+```{r}
+# Assuming 'data' is a data frame in R
+
+# Convert categorical columns to factors in R
+df$gender <- as.integer(factor(df$gender))
+df$race.ethnicity <- as.integer(factor(df$race.ethnicity))
+df$parental.level.of.education <- as.integer(factor(df$parental.level.of.education))
+df$lunch <- as.integer(factor(df$lunch))
+df$test.preparation.course <- as.integer(factor(df$test.preparation.course))
+
+head(df)
+
+```
+
+```{r}
+correlation_matrix_1 <- cor(df)
+correlation_matrix_1
+```
+
+### **Observations:**
+
+1.  **Math, Reading, and Writing Scores:**
+
+    -   Strong positive correlations exist among math, reading, and writing scores. This suggests that students who perform well in math tend to perform well in reading and writing, and vice versa.
+
+2.  **Lunch and Test Preparation:**
+
+    -   There's a moderate positive correlation between having standard lunch and higher math, reading, and writing scores. This suggests a tendency that students with standard lunch might have higher scores.
+
+3.  **Test Preparation Course:**
+
+    -   There's a negative correlation between taking the test preparation course and the scores. This could imply that students who took the test preparation course might have scored lower on average compared to those who didn't.
+
+4.  **Parental Level of Education:**
+
+    -   There are weak positive correlations between parental level of education and the scores. This might imply that there is some influence of parental education on the students' performance but it's not very strong.
+
+5.  **Gender and Race/Ethnicity:**
+
+    -   There are minor correlations between gender, race/ethnicity, and the scores. The influence of these factors on scores appears to be comparatively lower in this dataset
+
+```{r}
+corrplot(correlation_matrix_1, method = "color", addCoef.col = "blue", tl.cex = 0.8,col = colorRampPalette(c("#FFFFCC", "#78C679"))(10))
+```
+
+### **Observations:**
+
+1.  Students who performed well in reading test, performed well even in writing test
+
+2.  Ethnicity and lunch parameters affect math score more than writing and reading scores.
